@@ -1,0 +1,21 @@
+[package]
+name = "krew-wasm"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow                      = "1.0.56"
+clap                        = { version = "3.1", features = [ "derive", "env" ] }
+kube-conf                   = "0.2.0"
+lazy_static                 = "1.4.0"
+thiserror                   = "1.0.30"
+tracing                     = "0.1"
+tracing-futures             = "0.2"
+tracing-subscriber          = { version = "0.3", features = ["fmt", "env-filter"] }
+wasmtime                    = "0.34"
+wasmtime-wasi               = "0.34"
+wasi-common                 = "0.34"
+wasi-cap-std-sync           = "0.34"
+wasi-outbound-http-wasmtime = { git = "https://github.com/flavio/wasi-experimental-toolkit", branch = "wasi-outbount-http-add-request-config"}
