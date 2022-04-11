@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use std::collections::HashSet;
+use std::env;
 use std::path::Path;
 use std::process;
 use tracing_subscriber::prelude::*;
@@ -7,7 +8,7 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 mod cli;
 use clap::Parser;
-use cli::{Commands, BINARY_NAME};
+use cli::{NativeCommands, BINARY_NAME, KREW_WASM_VERBOSE_ENV};
 
 mod errors;
 use errors::KrewWapcError;
@@ -27,11 +28,8 @@ lazy_static! {
     };
 }
 
-fn main() {
-    let shared_cli = cli::Shared::parse();
-
-    // setup logging
-    let level_filter = if shared_cli.verbose { "debug" } else { "info" };
+fn setup_logging(verbose: bool) {
+    let level_filter = if verbose { "debug" } else { "info" };
     let filter_layer = EnvFilter::new(level_filter)
         .add_directive("cranelift_codegen=off".parse().unwrap()) // this crate generates lots of tracing events we don't care about
         .add_directive("cranelift_wasm=off".parse().unwrap()) // this crate generates lots of tracing events we don't care about
@@ -42,12 +40,25 @@ fn main() {
         .with(filter_layer)
         .with(fmt::layer().with_writer(std::io::stderr))
         .init();
+}
 
-    let args: Vec<String> = std::env::args().collect();
+fn main() {
+    // setup logging
+
+    let args: Vec<String> = env::args().collect();
     if BINARY_NAMES.contains(&args[0]) {
+        // native mode
         let cli = cli::Native::parse();
+        setup_logging(cli.verbose);
         run_native(cli);
     } else {
+        // wrapper mode
+        let verbose = match std::env::var_os(KREW_WASM_VERBOSE_ENV) {
+            Some(v) => v == "1",
+            None => false,
+        };
+        setup_logging(verbose);
+
         let invocation = Path::new(&args[0]).file_name().unwrap().to_str().unwrap();
         let wasm_module_name = match invocation.strip_prefix("kubectl-") {
             Some(n) => n,
@@ -58,7 +69,8 @@ fn main() {
         //TODO remove hard coded path
         let wasm_module_path = Path::new("/home/flavio/").join(wasm_module);
         if wasm_module_path.exists() {
-            wasm_host::run_plugin(wasm_module_path).unwrap();
+            let wasi_args = wasm_host::WasiArgs::Inherit;
+            wasm_host::run_plugin(wasm_module_path, &wasi_args).unwrap();
         } else {
             eprintln!(
                 "Cannot find wasm plugin {} at {}",
@@ -72,9 +84,20 @@ fn main() {
 
 fn run_native(cli: cli::Native) {
     match cli.command {
-        Commands::Run { module } => {
-            let wasm_module_pah = Path::new(module.as_str());
-            match wasm_host::run_plugin(wasm_module_pah.to_path_buf()) {
+        NativeCommands::Run { module, wasm_args } => {
+            let wasm_module_path = Path::new(module.as_str());
+            let mut wasm_args = wasm_args.clone();
+            wasm_args.insert(
+                0,
+                wasm_module_path
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string(),
+            );
+            let wasi_args = wasm_host::WasiArgs::UserProvided(wasm_args);
+
+            match wasm_host::run_plugin(wasm_module_path.to_path_buf(), &wasi_args) {
                 Err(e) => match e {
                     KrewWapcError::PlugingExitError { code } => {
                         println!();

@@ -12,14 +12,17 @@ struct Context {
     pub runtime_data: Option<OutboundHttp>,
 }
 
-fn build_ctx(runtime_data: Option<OutboundHttp>) -> Context {
-    let wasi = default_wasi();
+fn build_ctx(runtime_data: Option<OutboundHttp>, wasi_args: &WasiArgs) -> Context {
+    let wasi = build_wasi_ctx(wasi_args);
     Context { wasi, runtime_data }
 }
 
-fn default_wasi() -> WasiCtx {
+fn build_wasi_ctx(args: &WasiArgs) -> WasiCtx {
     let mut ctx = WasiCtxBuilder::new().inherit_stdio().inherit_stdout();
-    ctx = ctx.inherit_args().unwrap();
+    ctx = match &args {
+        &WasiArgs::Inherit => ctx.inherit_args().unwrap(),
+        &WasiArgs::UserProvided(args) => ctx.args(&args).unwrap(),
+    };
     ctx = ctx.inherit_env().unwrap();
     ctx = ctx
         .preopened_dir(
@@ -46,7 +49,12 @@ fn kube_api_server_url() -> anyhow::Result<String> {
     Ok(cluster.server)
 }
 
-pub(crate) fn run_plugin(wasm_module_path: PathBuf) -> Result<()> {
+pub(crate) enum WasiArgs {
+    Inherit,
+    UserProvided(Vec<String>),
+}
+
+pub(crate) fn run_plugin(wasm_module_path: PathBuf, wasi_args: &WasiArgs) -> Result<()> {
     if !wasm_module_path.exists() {
         return Err(KrewWapcError::GenericError(format!(
             "Cannot find {}",
@@ -56,7 +64,7 @@ pub(crate) fn run_plugin(wasm_module_path: PathBuf) -> Result<()> {
 
     let allowed_hosts = vec![kube_api_server_url()?];
     let outbound_http = OutboundHttp::new(Some(allowed_hosts));
-    let ctx = build_ctx(Some(outbound_http));
+    let ctx = build_ctx(Some(outbound_http), wasi_args);
 
     // Modules can be compiled through either the text or binary format
     let mut config = Config::new();
