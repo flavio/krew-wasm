@@ -7,13 +7,15 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::{fmt, EnvFilter};
 
 mod cli;
+mod errors;
+mod pull;
+mod run;
+mod wasm_host;
+
 use clap::Parser;
 use cli::{NativeCommands, BINARY_NAME, KREW_WASM_VERBOSE_ENV};
 
-mod errors;
-use errors::KrewWapcError;
-
-mod wasm_host;
+use pull::ALL_MODULES_STORE_ROOT;
 
 lazy_static! {
     // Useful when developing the project: `cargo run` leads to a
@@ -42,7 +44,8 @@ fn setup_logging(verbose: bool) {
         .init();
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     // setup logging
 
     let args: Vec<String> = env::args().collect();
@@ -50,7 +53,7 @@ fn main() {
         // native mode
         let cli = cli::Native::parse();
         setup_logging(cli.verbose);
-        run_native(cli);
+        run_native(cli).await;
     } else {
         // wrapper mode
         let verbose = match std::env::var_os(KREW_WASM_VERBOSE_ENV) {
@@ -64,57 +67,25 @@ fn main() {
             Some(n) => n,
             None => args[0].as_str(),
         };
-        let wasm_module = format!("{}.wasm", wasm_module_name);
 
-        //TODO remove hard coded path
-        let wasm_module_path = Path::new("/home/flavio/").join(wasm_module);
+        let wasm_module_path = ALL_MODULES_STORE_ROOT.join(wasm_module_name);
         if wasm_module_path.exists() {
             let wasi_args = wasm_host::WasiArgs::Inherit;
-            wasm_host::run_plugin(wasm_module_path, &wasi_args).unwrap();
+            wasm_host::run_plugin(wasm_module_path, &wasi_args).expect("error running wasm plugin");
         } else {
             eprintln!(
-                "Cannot find wasm plugin {} at {}",
+                "Cannot find wasm plugin {} at {}. Use `krew-wasm pull` to pull it to the store from an OCI registry",
                 wasm_module_name,
-                wasm_module_path.to_str().unwrap()
+                wasm_module_path.to_str().unwrap(),
             );
             process::exit(1);
         }
     }
 }
 
-fn run_native(cli: cli::Native) {
+async fn run_native(cli: cli::Native) {
     match cli.command {
-        NativeCommands::Run { module, wasm_args } => {
-            let wasm_module_path = Path::new(module.as_str());
-
-            let wasm_filename = wasm_module_path.file_name().unwrap().to_string_lossy();
-            let plugin_name = wasm_filename
-                .strip_suffix(".wasm")
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| wasm_filename.to_string());
-            let kubectl_plugin_name = if plugin_name.starts_with("kubectl-") {
-                plugin_name
-            } else {
-                format!("kubectl-{}", plugin_name)
-            };
-
-            let mut wasm_args = wasm_args.clone();
-            wasm_args.insert(0, kubectl_plugin_name);
-            let wasi_args = wasm_host::WasiArgs::UserProvided(wasm_args);
-
-            match wasm_host::run_plugin(wasm_module_path.to_path_buf(), &wasi_args) {
-                Err(e) => match e {
-                    KrewWapcError::PlugingExitError { code } => {
-                        println!();
-                        process::exit(code)
-                    }
-                    _ => {
-                        eprintln!("{:?}", e);
-                        process::exit(1)
-                    }
-                },
-                Ok(_) => process::exit(0),
-            }
-        }
+        NativeCommands::Run { module, wasm_args } => run::run(module, wasm_args),
+        NativeCommands::Pull { uri } => pull::pull(uri).await,
     }
 }

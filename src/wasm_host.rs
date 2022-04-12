@@ -1,3 +1,4 @@
+use directories::UserDirs;
 use std::path::PathBuf;
 use wasi_cap_std_sync::WasiCtxBuilder;
 use wasi_common::WasiCtx;
@@ -18,16 +19,18 @@ fn build_ctx(runtime_data: Option<OutboundHttp>, wasi_args: &WasiArgs) -> Contex
 }
 
 fn build_wasi_ctx(args: &WasiArgs) -> WasiCtx {
+    let user_dirs = UserDirs::new().expect("cannot find user dirs");
+    let home_dir = user_dirs.home_dir();
     let mut ctx = WasiCtxBuilder::new().inherit_stdio().inherit_stdout();
     ctx = match &args {
-        &WasiArgs::Inherit => ctx.inherit_args().unwrap(),
-        &WasiArgs::UserProvided(args) => ctx.args(&args).unwrap(),
+        WasiArgs::Inherit => ctx.inherit_args().unwrap(),
+        WasiArgs::UserProvided(args) => ctx.args(args).unwrap(),
     };
     ctx = ctx.inherit_env().unwrap();
     ctx = ctx
         .preopened_dir(
-            Dir::open_ambient_dir("/home/flavio", ambient_authority()).unwrap(),
-            "/home/flavio",
+            Dir::open_ambient_dir(&home_dir, ambient_authority()).unwrap(),
+            &home_dir,
         )
         .unwrap();
 
@@ -40,11 +43,11 @@ fn kube_api_server_url() -> anyhow::Result<String> {
 
     let kube_ctx = config
         .get_current_context()
-        .ok_or(anyhow::anyhow!("kubeconf: no default kubernetes context"))?;
+        .ok_or_else(|| anyhow::anyhow!("kubeconf: no default kubernetes context"))?;
 
     let cluster = kube_ctx
         .get_cluster(&config)
-        .ok_or(anyhow::anyhow!("kubeconf: cannot find cluster definition"))?;
+        .ok_or_else(|| anyhow::anyhow!("kubeconf: cannot find cluster definition"))?;
 
     Ok(cluster.server)
 }
@@ -91,7 +94,7 @@ pub(crate) fn run_plugin(wasm_module_path: PathBuf, wasi_args: &WasiArgs) -> Res
     // And finally we can call the wasm!
     start.call(&mut store, ()).map_err(|e| {
         if let Some(exit_code) = e.i32_exit_status() {
-            KrewWapcError::PlugingExitError { code: exit_code }
+            KrewWapcError::PluginExitError { code: exit_code }
         } else {
             KrewWapcError::GenericWasmEvalError(e.display_reason().to_string())
         }
