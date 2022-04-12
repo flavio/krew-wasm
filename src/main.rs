@@ -15,6 +15,8 @@ mod wasm_host;
 use clap::Parser;
 use cli::{NativeCommands, BINARY_NAME, KREW_WASM_VERBOSE_ENV};
 
+use errors::KrewWapcError;
+
 use pull::ALL_MODULES_STORE_ROOT;
 
 lazy_static! {
@@ -71,7 +73,19 @@ async fn main() {
         let wasm_module_path = ALL_MODULES_STORE_ROOT.join(wasm_module_name);
         if wasm_module_path.exists() {
             let wasi_args = wasm_host::WasiArgs::Inherit;
-            wasm_host::run_plugin(wasm_module_path, &wasi_args).expect("error running wasm plugin");
+            match wasm_host::run_plugin(wasm_module_path, &wasi_args) {
+                Err(e) => match e {
+                    KrewWapcError::PluginExitError { code } => {
+                        println!();
+                        process::exit(code)
+                    }
+                    _ => {
+                        eprintln!("{:?}", e);
+                        process::exit(1)
+                    }
+                },
+                Ok(_) => process::exit(0),
+            }
         } else {
             eprintln!(
                 "Cannot find wasm plugin {} at {}. Use `krew-wasm pull` to pull it to the store from an OCI registry",
