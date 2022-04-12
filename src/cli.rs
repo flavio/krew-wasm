@@ -31,6 +31,11 @@ pub(crate) enum NativeCommands {
         #[clap(last = true)]
         wasm_args: Vec<String>,
     },
-    // TODO: add a pull command
+    /// Pull
+    #[clap(arg_required_else_help = true)]
+    Pull {
+        /// URI for the WebAssembly module to pull
+        uri: String,
+    },
     // TODO: add a rm command
 }

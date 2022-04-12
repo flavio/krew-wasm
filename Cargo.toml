@@ -8,9 +8,13 @@ edition = "2021"
 [dependencies]
 anyhow                      = "1.0.56"
 clap                        = { version = "3.1", features = [ "derive", "env" ] }
+directories                 = "4.0"
 kube-conf                   = "0.2.0"
 lazy_static                 = "1.4.0"
+policy-fetcher              = { git = "https://github.com/kubewarden/policy-fetcher", tag = "v0.6.1" }
+regex                       = "1"
 thiserror                   = "1.0.30"
+tokio                       = "1.17"
 tracing                     = "0.1"
 tracing-futures             = "0.2"
 tracing-subscriber          = { version = "0.3", features = ["fmt", "env-filter"] }
