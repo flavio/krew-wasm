@@ -1422,8 +1422,10 @@ dependencies = [
  "directories",
  "kube-conf",
  "lazy_static",
+ "pathdiff",
  "policy-fetcher",
  "regex",
+ "term-table",
  "thiserror",
  "tokio",
  "tracing",
@@ -1908,6 +1910,12 @@ name = "path-slash"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cacbb3c4ff353b534a67fb8d7524d00229da4cb1dc8c79f4db96e375ab5b619"
+
+[[package]]
+name = "pathdiff"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
 
 [[package]]
 name = "pem"
@@ -2789,6 +2797,17 @@ dependencies = [
  "redox_syscall",
  "remove_dir_all",
  "winapi",
+]
+
+[[package]]
+name = "term-table"
+version = "1.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5e59d7fb313157de2a568be8d81e4d7f9af6e50e697702e8e00190a6566d3b8"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "unicode-width",
 ]
 
 [[package]]

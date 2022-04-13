@@ -22,6 +22,23 @@ pub(crate) struct Native {
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum NativeCommands {
+    /// List
+    List,
+    /// Pull
+    #[clap(arg_required_else_help = true)]
+    Pull {
+        /// URI for the WebAssembly module to pull
+        uri: String,
+        /// Remove an existing module with the same name, if any
+        #[clap(short, long)]
+        force: bool,
+    },
+    /// Rm
+    #[clap(arg_required_else_help = true)]
+    Rm {
+        /// Name of the WebAssembly module to remove
+        module: String,
+    },
     /// Run
     #[clap(arg_required_else_help = true)]
     Run {
@@ -31,11 +48,4 @@ pub(crate) enum NativeCommands {
         #[clap(last = true)]
         wasm_args: Vec<String>,
     },
-    /// Pull
-    #[clap(arg_required_else_help = true)]
-    Pull {
-        /// URI for the WebAssembly module to pull
-        uri: String,
-    },
-    // TODO: add a rm command
 }
