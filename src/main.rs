@@ -8,16 +8,20 @@ use tracing_subscriber::{fmt, EnvFilter};
 
 mod cli;
 mod errors;
-mod pull;
-mod run;
+mod store;
 mod wasm_host;
+
+mod ls;
+mod pull;
+mod rm;
+mod run;
 
 use clap::Parser;
 use cli::{NativeCommands, BINARY_NAME, KREW_WASM_VERBOSE_ENV};
 
 use errors::KrewWapcError;
 
-use pull::ALL_MODULES_STORE_ROOT;
+use store::ALL_MODULES_STORE_ROOT;
 
 lazy_static! {
     // Useful when developing the project: `cargo run` leads to a
@@ -49,6 +53,8 @@ fn setup_logging(verbose: bool) {
 #[tokio::main]
 async fn main() {
     // setup logging
+
+    store::ensure();
 
     let args: Vec<String> = env::args().collect();
     if BINARY_NAMES.contains(&args[0]) {
@@ -99,7 +105,16 @@ async fn main() {
 
 async fn run_native(cli: cli::Native) {
     match cli.command {
+        NativeCommands::List => ls::ls(),
+        NativeCommands::Pull { uri, force } => {
+            let force_pull = if force {
+                pull::ForcePull::ForcePull
+            } else {
+                pull::ForcePull::DoNotForcePull
+            };
+            pull::pull(&uri, force_pull).await
+        }
+        NativeCommands::Rm { module } => rm::rm(&module),
         NativeCommands::Run { module, wasm_args } => run::run(module, wasm_args),
-        NativeCommands::Pull { uri } => pull::pull(uri).await,
     }
 }
