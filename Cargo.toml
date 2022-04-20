@@ -28,7 +28,7 @@ wasmtime                    = "0.34"
 wasmtime-wasi               = "0.34"
 wasi-common                 = "0.34"
 wasi-cap-std-sync           = "0.34"
-wasi-outbound-http-wasmtime = { path = "../../wasm/wasi-experimental-toolkit/crates/http-wasmtime", default_features = false }
+wasi-outbound-http-wasmtime = { git = "https://github.com/flavio/wasi-experimental-toolkit", branch = "wasi-outbount-http-add-request-config", default_features = false }
 
 [patch.crates-io]
 # need a upstream to tag a new release with this patch https://github.com/seanmonstar/reqwest/pull/1526

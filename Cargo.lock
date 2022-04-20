@@ -3278,6 +3278,7 @@ dependencies = [
 [[package]]
 name = "wasi-outbound-http-defs"
 version = "0.1.0"
+source = "git+https://github.com/flavio/wasi-experimental-toolkit?branch=wasi-outbount-http-add-request-config#7321ff5a3735e4c9dd368c0abce733b1fce6fcaa"
 dependencies = [
  "lazy_static",
 ]
@@ -3285,6 +3286,7 @@ dependencies = [
 [[package]]
 name = "wasi-outbound-http-wasmtime"
 version = "0.1.0"
+source = "git+https://github.com/flavio/wasi-experimental-toolkit?branch=wasi-outbount-http-add-request-config#7321ff5a3735e4c9dd368c0abce733b1fce6fcaa"
 dependencies = [
  "anyhow",
  "bytes",
