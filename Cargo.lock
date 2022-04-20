@@ -1108,7 +1108,7 @@ dependencies = [
  "indexmap",
  "slab",
  "tokio",
- "tokio-util",
+ "tokio-util 0.7.1",
  "tracing",
 ]
 
@@ -1433,7 +1433,7 @@ dependencies = [
  "tracing-subscriber",
  "wasi-cap-std-sync",
  "wasi-common",
- "wasi-outbound-http-wasmtime",
+ "wasi-outbound-http-wasmtime-kube",
  "wasmtime",
  "wasmtime-wasi",
 ]
@@ -1758,7 +1758,7 @@ dependencies = [
  "jwt",
  "lazy_static",
  "regex",
- "reqwest",
+ "reqwest 0.11.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
  "sha2 0.9.9",
@@ -2079,7 +2079,7 @@ dependencies = [
  "path-slash",
  "rayon",
  "regex",
- "reqwest",
+ "reqwest 0.11.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustls",
  "serde",
  "serde_json",
@@ -2308,6 +2308,45 @@ dependencies = [
 [[package]]
 name = "reqwest"
 version = "0.11.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46a1f7aa4f35e5e8b4160449f51afc758f0ce6454315a9fa7d0d113e958c41eb"
+dependencies = [
+ "base64",
+ "bytes",
+ "encoding_rs",
+ "futures-core",
+ "futures-util",
+ "h2",
+ "http",
+ "http-body",
+ "hyper",
+ "hyper-rustls",
+ "ipnet",
+ "js-sys",
+ "lazy_static",
+ "log",
+ "mime",
+ "percent-encoding 2.1.0",
+ "pin-project-lite",
+ "rustls",
+ "rustls-pemfile 0.3.0",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "tokio",
+ "tokio-rustls",
+ "tokio-util 0.6.9",
+ "url 2.2.2",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "webpki-roots",
+ "winreg",
+]
+
+[[package]]
+name = "reqwest"
+version = "0.11.10"
 source = "git+https://github.com/seanmonstar/reqwest.git?rev=2e5debe24832d4a28a90dbe0eb092eea27386d41#2e5debe24832d4a28a90dbe0eb092eea27386d41"
 dependencies = [
  "base64",
@@ -2330,14 +2369,13 @@ dependencies = [
  "percent-encoding 2.1.0",
  "pin-project-lite",
  "rustls",
- "rustls-pemfile",
+ "rustls-pemfile 1.0.0",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
  "tokio-rustls",
- "tokio-util",
  "url 2.2.2",
  "wasm-bindgen",
  "wasm-bindgen-futures",
@@ -2428,6 +2466,15 @@ dependencies = [
  "ring",
  "sct",
  "webpki",
+]
+
+[[package]]
+name = "rustls-pemfile"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ee86d63972a7c661d1536fefe8c3c8407321c3df668891286de28abcd087360"
+dependencies = [
+ "base64",
 ]
 
 [[package]]
@@ -2932,6 +2979,20 @@ dependencies = [
 
 [[package]]
 name = "tokio-util"
+version = "0.6.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e99e1983e5d376cd8eb4b66604d2e99e79f5bd988c3055891dcd8c9e2604cc0"
+dependencies = [
+ "bytes",
+ "futures-core",
+ "futures-sink",
+ "log",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
+name = "tokio-util"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0edfdeb067411dba2044da6d1cb2df793dd35add7888d73c16e3381ded401764"
@@ -2968,7 +3029,7 @@ dependencies = [
  "path-absolutize",
  "pem",
  "percent-encoding 2.1.0",
- "reqwest",
+ "reqwest 0.11.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "ring",
  "serde",
  "serde_json",
@@ -3284,9 +3345,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasi-outbound-http-wasmtime"
+name = "wasi-outbound-http-wasmtime-kube"
 version = "0.1.0"
-source = "git+https://github.com/flavio/wasi-experimental-toolkit?branch=wasi-outbount-http-add-request-config#7321ff5a3735e4c9dd368c0abce733b1fce6fcaa"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3294,7 +3354,7 @@ dependencies = [
  "futures",
  "http",
  "openssl",
- "reqwest",
+ "reqwest 0.11.10 (git+https://github.com/seanmonstar/reqwest.git?rev=2e5debe24832d4a28a90dbe0eb092eea27386d41)",
  "tokio",
  "tracing",
  "url 2.2.2",
