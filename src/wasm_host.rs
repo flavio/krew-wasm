@@ -2,7 +2,7 @@ use directories::UserDirs;
 use std::path::PathBuf;
 use wasi_cap_std_sync::WasiCtxBuilder;
 use wasi_common::WasiCtx;
-use wasi_outbound_http_wasmtime::OutboundHttp;
+use wasi_outbound_http_wasmtime_kube::OutboundHttp;
 use wasmtime::{Config, Engine, Linker, Module, Store};
 use wasmtime_wasi::*;
 
@@ -81,7 +81,7 @@ pub(crate) fn run_plugin(wasm_module_path: PathBuf, wasi_args: &WasiArgs) -> Res
     wasmtime_wasi::add_to_linker(&mut linker, |cx: &mut Context| &mut cx.wasi)?;
     let mut store = Store::new(&engine, ctx);
 
-    wasi_outbound_http_wasmtime::add_to_linker(&mut linker, |ctx| -> &mut OutboundHttp {
+    wasi_outbound_http_wasmtime_kube::add_to_linker(&mut linker, |ctx| -> &mut OutboundHttp {
         ctx.runtime_data.as_mut().unwrap()
     })?;
 
