@@ -113,7 +113,6 @@ impl wasi_outbound_http::WasiOutboundHttp for OutboundHttp {
             }
         };
 
-        //let url, socket_addr = Url::parse(req.uri).map_err(|_| HttpError::InvalidUrl)?;
         let headers = headers(req.headers)?;
         let body = req.body.unwrap_or_default().to_vec();
 
