@@ -1,0 +1,190 @@
+name: krew-wasm release
+on:
+  push:
+    tags:
+    - 'v*'
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+
+  ci:
+    # A branch iserequired, and cannot be dynamic - https://github.com/actions/runner/issues/1493
+    uses: flavio/krew-wasm/.github/workflows/tests.yml@main
+
+  build-linux-x86_64:
+    name: Build linux (x86_64) binary
+    runs-on: ubuntu-latest
+    needs:
+      - ci
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: Setup musl for x86_64
+      run: |
+        curl https://musl.cc/x86_64-linux-musl-cross.tgz | tar -xz
+        echo "$PWD/x86_64-linux-musl-cross/bin" >> $GITHUB_PATH
+    - run: rustup target add x86_64-unknown-linux-musl
+    - name: Build krew-wasm
+      env:
+        CC: x86_64-linux-musl-gcc
+      run: cargo build --target=x86_64-unknown-linux-musl --release
+    - run: mv target/x86_64-unknown-linux-musl/release/krew-wasm krew-wasm-linux-x86_64
+    - run: zip -j9 krew-wasm-linux-x86_64.zip krew-wasm-linux-x86_64
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: krew-wasm-linux-x86_64
+        path: krew-wasm-linux-x86_64.zip
+
+  build-linux-aarch64:
+    name: Build linux (aarch64) binary
+    runs-on: ubuntu-latest
+    needs:
+      - ci
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: Setup musl for aarch64
+      run: |
+        curl https://musl.cc/aarch64-linux-musl-cross.tgz | tar -xz
+        echo "$PWD/aarch64-linux-musl-cross/bin" >> $GITHUB_PATH
+    - run: rustup target add aarch64-unknown-linux-musl
+    - name: Build krew-wasm
+      env:
+        CC: aarch64-linux-musl-gcc
+      run: cargo build --target=aarch64-unknown-linux-musl --release
+    - run: mv target/aarch64-unknown-linux-musl/release/krew-wasm krew-wasm-linux-aarch64
+    - run: zip -j9 krew-wasm-linux-aarch64.zip krew-wasm-linux-aarch64
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: krew-wasm-linux-aarch64
+        path: krew-wasm-linux-aarch64.zip
+
+  build-darwin-x86_64:
+    name: Build darwin (x86_64) binary
+    runs-on: macos-latest
+    needs:
+      - ci
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - run: rustup target add x86_64-apple-darwin
+    - name: Build krew-wasm
+      run: cargo build --target=x86_64-apple-darwin --release
+    - run: mv target/x86_64-apple-darwin/release/krew-wasm krew-wasm-darwin-x86_64
+    - run: zip -j9 krew-wasm-darwin-x86_64.zip krew-wasm-darwin-x86_64
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: krew-wasm-darwin-x86_64
+        path: krew-wasm-darwin-x86_64.zip
+
+  build-windows-x86_64:
+    name: Build windows (x86_64) binary
+    runs-on: windows-latest
+    needs:
+      - ci
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - run: rustup target add x86_64-pc-windows-msvc
+    - name: Build krew-wasm
+      run: cargo build --target=x86_64-pc-windows-msvc --release
+    - run: mv target/x86_64-pc-windows-msvc/release/krew-wasm.exe krew-wasm-windows-x86_64.exe
+    - run: |
+        "/c/Program Files/7-Zip/7z.exe" a krew-wasm-windows-x86_64.exe.zip krew-wasm-windows-x86_64.exe
+      shell: bash
+    - name: Upload binary
+      uses: actions/upload-artifact@v2
+      with:
+        name: krew-wasm-windows-x86_64
+        path: krew-wasm-windows-x86_64.exe.zip
+
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    needs:
+      - build-linux-x86_64
+      - build-linux-aarch64
+      - build-darwin-x86_64
+      - build-windows-x86_64
+    steps:
+    - name: Create Release
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release krew-wasm ${{ github.ref }}
+        draft: false
+        prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+
+    - name: Download linux-x86_64 binary
+      uses: actions/download-artifact@v2
+      with:
+        name: krew-wasm-linux-x86_64
+    - name: Publish linux-x86_64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_name: krew-wasm-linux-x86_64.zip
+        asset_path: krew-wasm-linux-x86_64.zip
+        asset_content_type: application/zip
+
+    - name: Download linux-aarch64 binary
+      uses: actions/download-artifact@v2
+      with:
+        name: krew-wasm-linux-aarch64
+    - name: Publish linux-aarch64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_name: krew-wasm-linux-aarch64.zip
+        asset_path: krew-wasm-linux-aarch64.zip
+        asset_content_type: application/zip
+
+    - name: Download darwin-x86_64 binary
+      uses: actions/download-artifact@v2
+      with:
+        name: krew-wasm-darwin-x86_64
+    - name: Publish darwin-x86_64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_name: krew-wasm-darwin-x86_64.zip
+        asset_path: krew-wasm-darwin-x86_64.zip
+        asset_content_type: application/zip
+
+    - name: Download windows-x86_64 binary
+      uses: actions/download-artifact@v2
+      with:
+        name: krew-wasm-windows-x86_64
+    - name: Publish windows-x86_64 binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_name: krew-wasm-windows-x86_64.exe.zip
+        asset_path: krew-wasm-windows-x86_64.exe.zip
+        asset_content_type: application/zip
