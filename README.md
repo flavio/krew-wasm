@@ -71,7 +71,7 @@ That's a legitimate question. I think the main advantages are:
 
   * WebAssembly is portable: you don't have to build your plugin for all the
     possible operating systems and architectures the end users might want.
-    Portability remains a problem of krew-wasm maintainers, not of policy authors.
+    Portability remains a problem of krew-wasm maintainers, not of plugin authors.
   * Security: WebAssembly modules are executed inside of a dedicated sandbox. They
     cannot see other processes running on the host nor have access to the host
     filesystem.
