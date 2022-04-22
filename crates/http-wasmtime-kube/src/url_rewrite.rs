@@ -12,7 +12,7 @@ pub(crate) fn url_rewrite_workaround(
         .or_else(|| {
             match server_url
                 .scheme()
-                .unwrap_or_else(|| &http::uri::Scheme::HTTP)
+                .unwrap_or(&http::uri::Scheme::HTTP)
                 .as_str()
             {
                 "http" => Some(80),
@@ -20,7 +20,7 @@ pub(crate) fn url_rewrite_workaround(
                 _ => None,
             }
         })
-        .ok_or(anyhow!("url doesn't use a known schema"))?;
+        .ok_or_else(|| anyhow!("url doesn't use a known schema"))?;
 
     let socket_addr = if let Ok(ipv4_addr) = host.parse::<Ipv4Addr>() {
         Some(SocketAddr::new(IpAddr::V4(ipv4_addr), port))

@@ -29,7 +29,7 @@ impl TryFrom<Identity<'_>> for reqwest::Identity {
                 if pem_bundle[pem_bundle.len() - 1] != b'\n' {
                     pem_bundle.insert(pem_bundle.len(), b'\n');
                 }
-                pem_bundle.extend_from_slice(&identity.cert);
+                pem_bundle.extend_from_slice(identity.cert);
                 reqwest::Identity::from_pem(&pem_bundle)
                     .map_err(|e| format!("Cannot create identity: {:?}", e))
             } else {

@@ -53,8 +53,10 @@ impl OutboundHttp {
             Some(domains) => {
                 let allowed: Result<Vec<_>, _> = domains.iter().map(|d| Url::parse(d)).collect();
                 let allowed = allowed.map_err(|_| HttpError::InvalidUrl)?;
-                let a: Vec<&str> = allowed.iter().map(|u| u.host_str().unwrap()).collect();
-                Ok(a.contains(&url_host.as_str()))
+                Ok(allowed
+                    .iter()
+                    .map(|u| u.host_str().unwrap())
+                    .any(|x| x == url_host.as_str()))
             }
             None => {
                 error!("allowed_hosts is empty, blocking the request");
@@ -80,18 +82,18 @@ impl wasi_outbound_http::WasiOutboundHttp for OutboundHttp {
 
         hash.insert(id.clone(), cfg);
 
-        return Ok(id);
+        Ok(id)
     }
 
     fn request(&mut self, req: Request, config: Option<&str>) -> Result<Response, HttpError> {
-        if !Self::is_allowed(&req.uri, self.allowed_hosts.clone())? {
+        if !Self::is_allowed(req.uri, self.allowed_hosts.clone())? {
             return Err(HttpError::DestinationNotAllowed);
         }
 
         let reqwest_config = config
             .map(|id| {
                 let hash = self.request_configs.read().unwrap();
-                hash.get(id).map(|i| i.clone()).ok_or_else(|| {
+                hash.get(id).cloned().ok_or_else(|| {
                     error!(?id, "cannot find request config");
                     HttpError::InvalidCfg
                 })
@@ -168,7 +170,7 @@ impl wasi_outbound_http::WasiOutboundHttp for OutboundHttp {
                 if let Err(e) = &res {
                     error!(error =? e, "http request failure");
                 }
-                Ok(Response::try_from(res?)?)
+                Response::try_from(res?)
             }))
             .map_err(|_| HttpError::RuntimeError)?,
             Err(_) => {
