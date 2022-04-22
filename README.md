@@ -63,6 +63,47 @@ format and can be found
 Currently, plugins are allowed to make http requests **only** against the
 Kubernetes API server that is defined inside of the default kubeconfig file.
 
+## Why?
+
+> Why would someone be interested in writing kubectl plugins in this way?
+
+That's a legitimate question. I think the main advantages are:
+
+  * WebAssembly is portable: you don't have to build your plugin for all the
+    possible operating systems and architectures the end users might want.
+    Portability remains a problem of krew-wasm maintainers, not of plugin authors.
+  * Security: WebAssembly modules are executed inside of a dedicated sandbox. They
+    cannot see other processes running on the host nor have access to the host
+    filesystem.
+    Note well: currently this POC gives access to the whole user home directory
+    to each plugin. We have plans to change that and give access only to the
+    kubeconfig file and all the resources referenced by it.
+  * Size: the majority of kubectl plugins are written using Go, which produces
+    big binaries (the average size of a kubectl plugin is around ~9Mb). A Rust
+    plugin compiled into WebAssembly is almost half the size of it (~4.2 Mb).
+    This can be even trimmed down a bit by running a WebAssembly binary optimizer
+    like `wasm-opt`.
+
+Last but not least, this was fun! We have high expectations for WebAssembly and
+WASI, this is just another way to prove that to the world 🤓
+
+## Limitations
+
+Currently the biggest pain point is network access. The network interface introduced
+by krew-wasm kinda solves the problem, but there are some limitations.
+
+Regular Kubernetes client libraries cannot be used. With Rust the [`k8s-openapi`](https://crates.io/crates/k8s-openapi)
+can be used, but just because it uses a [sans-io](https://sans-io.readthedocs.io/)
+approach.
+We don't think other languages feature a library similar to `k8s-openapi`.
+
+Finally, all the long polling requests issued via `k8s-openapi` (like all the `watch`
+operations) are not going to work because of limitations with how data
+is exchanged between the WebAssembly host and the guest.
+
+All these limitations should be solved once WASI implements the [socket proposal](https://github.com/WebAssembly/wasi-sockets).
+That, among other things, should allow the usage of regular Kubernetes clients.
+
 ## Installation
 
 Download the right pre-built binary from the GitHub Releases page and
@@ -120,3 +161,10 @@ Plugins are written as regular WebAssembly modules leveraging the WASI interface
 website has many examples about "Hello World" WASI programs.
 
 A demo policy, that interacts with the API server, can be found [here](https://github.com/flavio/kubectl-kubewarden/).
+
+## Acknowledgements
+
+The idea about writing kubectl plugins using WebAssembly
+was born by [Rafael Fernández López](https://github.com/ereslibre)
+during a brain storming session with
+[Flavio Castelli](https://github.com/flavio).
