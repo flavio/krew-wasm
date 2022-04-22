@@ -8,8 +8,9 @@ the official plugin manager for kubectl. However, on top of being a completely
 different codebase, krew-wasm **does not** aim to replace Krew. It's a complementary
 tool that can be used alongside with Krew.
 
-The sole purpose of krew-wasm is to manage kubectl plugins written using WebAssembly
-and WASI.
+The sole purpose of krew-wasm is to manage kubectl plugins written using
+[WebAssembly](https://webassembly.org/)
+and [WASI](https://wasi.dev/).
 
 ## How it works
 
@@ -107,3 +108,14 @@ krew-wasm rm <name of the plugin>
 
 The name of the plugin can be obtained by using the `list` command.
 
+## Writing a plugin
+
+> Note well: this is still a POC, the documentation is limited, but will be
+> improved in the future
+
+Plugins are written as regular WebAssembly modules leveraging the WASI interface.
+
+[This](https://wasmbyexample.dev/examples/wasi-hello-world/wasi-hello-world.rust.en-us.html)
+website has many examples about "Hello World" WASI programs.
+
+A demo policy, that interacts with the API server, can be found [here](https://github.com/flavio/kubectl-kubewarden/).
