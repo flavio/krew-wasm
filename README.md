@@ -29,7 +29,7 @@ Once invoked, `krew-wasm` determines its usage mode which could either be a
 "direct invocation" (when the user invokes the `krew-wasm` binary to manage plugins)
 or it could be a "wrapper invocation" done via `kubectl`.
 
-When invoked in "wrapper mode, krew-wasm takes care of loading the WebAssembly
+When invoked in "wrapper mode", krew-wasm takes care of loading the WebAssembly
 plugin and invoking it. krew-wasm works as a WebAssembly host, and takes care of
 setting up the WASI environment used by the plugin.
 
@@ -53,19 +53,20 @@ Currently, the WebAssembly WASI specification doesn't cover network access for
 guest modules. However, kubectl plugins need to interact with the Kubernetes API
 server.
 
-Network access is granted via an experimental interface provided by the krew-wasm.
+Network access is granted via an experimental interface provided by
+the krew-wasm runtime.
 
 The interface is defined via the [`WIT`](https://github.com/bytecodealliance/wit-bindgen/blob/c9b113be144ba8418fb4a86a5993e0c44a7d64b3/WIT.md)
 format and can be found
 [here](https://github.com/flavio/wasi-experimental-toolkit/tree/wasi-outbount-http-add-request-config/crates/wasi-outbound-http-defs/wit).
 
-Currently, the plugins are allowed to make http requests **only** against the
+Currently, plugins are allowed to make http requests **only** against the
 Kubernetes API server that is defined inside of the default kubeconfig file.
 
 ## Installation
 
-Download the right pre-built binary from the GitHub Releases page and it to
-your `$PATH`.
+Download the right pre-built binary from the GitHub Releases page and
+install it in your `$PATH`.
 
 ## Usage
 
