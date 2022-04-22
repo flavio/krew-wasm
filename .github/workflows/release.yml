@@ -89,29 +89,44 @@ jobs:
         name: krew-wasm-darwin-x86_64
         path: krew-wasm-darwin-x86_64.zip
 
-  build-windows-x86_64:
-    name: Build windows (x86_64) binary
-    runs-on: windows-latest
-    needs:
-      - ci
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-    - run: rustup target add x86_64-pc-windows-msvc
-    - name: Build krew-wasm
-      run: cargo build --target=x86_64-pc-windows-msvc --release
-    - run: mv target/x86_64-pc-windows-msvc/release/krew-wasm.exe krew-wasm-windows-x86_64.exe
-    - run: |
-        "/c/Program Files/7-Zip/7z.exe" a krew-wasm-windows-x86_64.exe.zip krew-wasm-windows-x86_64.exe
-      shell: bash
-    - name: Upload binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: krew-wasm-windows-x86_64
-        path: krew-wasm-windows-x86_64.exe.zip
+#  TODO: re-enable it once we fix build errors caused by:
+#  ```
+#     error[E0433]: failed to resolve: could not find `unix` in `os`
+#     --> src\pull.rs:84:14
+#        |
+#     84 |     std::os::unix::fs::symlink(
+#        |              ^^^^ could not find `unix` in `os`
+#
+#     error[E0433]: failed to resolve: could not find `unix` in `os`
+#       --> src\pull.rs:93:14
+#        |
+#     93 |     std::os::unix::fs::symlink(
+#        |              ^^^^ could not find `unix` in `os`
+#  ```
+#
+#  build-windows-x86_64:
+#    name: Build windows (x86_64) binary
+#    runs-on: windows-latest
+#    needs:
+#      - ci
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Setup rust toolchain
+#      uses: actions-rs/toolchain@v1
+#      with:
+#        toolchain: stable
+#    - run: rustup target add x86_64-pc-windows-msvc
+#    - name: Build krew-wasm
+#      run: cargo build --target=x86_64-pc-windows-msvc --release
+#    - run: mv target/x86_64-pc-windows-msvc/release/krew-wasm.exe krew-wasm-windows-x86_64.exe
+#    - run: |
+#        "/c/Program Files/7-Zip/7z.exe" a krew-wasm-windows-x86_64.exe.zip krew-wasm-windows-x86_64.exe
+#      shell: bash
+#    - name: Upload binary
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: krew-wasm-windows-x86_64
+#        path: krew-wasm-windows-x86_64.exe.zip
 
   release:
     name: Create release
@@ -120,7 +135,7 @@ jobs:
       - build-linux-x86_64
       - build-linux-aarch64
       - build-darwin-x86_64
-      - build-windows-x86_64
+    #  - build-windows-x86_64
     steps:
     - name: Create Release
       id: create-release
@@ -175,16 +190,16 @@ jobs:
         asset_path: krew-wasm-darwin-x86_64.zip
         asset_content_type: application/zip
 
-    - name: Download windows-x86_64 binary
-      uses: actions/download-artifact@v2
-      with:
-        name: krew-wasm-windows-x86_64
-    - name: Publish windows-x86_64 binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_name: krew-wasm-windows-x86_64.exe.zip
-        asset_path: krew-wasm-windows-x86_64.exe.zip
-        asset_content_type: application/zip
+#   - name: Download windows-x86_64 binary
+#     uses: actions/download-artifact@v2
+#     with:
+#       name: krew-wasm-windows-x86_64
+#   - name: Publish windows-x86_64 binary
+#     uses: actions/upload-release-asset@v1
+#     env:
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#     with:
+#       upload_url: ${{ steps.create-release.outputs.upload_url }}
+#       asset_name: krew-wasm-windows-x86_64.exe.zip
+#       asset_path: krew-wasm-windows-x86_64.exe.zip
+#       asset_content_type: application/zip
