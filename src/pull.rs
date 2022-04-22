@@ -1,7 +1,10 @@
+use directories::BaseDirs;
 use lazy_static::lazy_static;
+use policy_fetcher::registry::config::{read_docker_config_json_file, DockerConfig};
 use policy_fetcher::{fetch_policy, PullDestination};
 use regex::Regex;
 use std::{path::Path, process};
+use tracing::debug;
 
 use crate::store::{ALL_MODULES_STORE_ROOT, BIN_ROOT, STORE_ROOT};
 
@@ -15,11 +18,35 @@ pub(crate) enum ForcePull {
     DoNotForcePull,
 }
 
+fn default_docker_config() -> Option<DockerConfig> {
+    let docker_config_path =
+        BaseDirs::new().map(|bd| bd.home_dir().join(".docker").join("config.json"));
+    if let Some(dcp) = docker_config_path {
+        if dcp.exists() {
+            debug!(file = dcp.to_str(), "loading docker config file");
+            Some(read_docker_config_json_file(&dcp).expect("Error reading docker config file"))
+        } else {
+            debug!("docker config file not found");
+            None
+        }
+    } else {
+        debug!("cannot infer location of docker config file");
+        None
+    }
+}
+
 pub(crate) async fn pull(uri: &str, force_pull: ForcePull) {
+    let docker_config = default_docker_config();
+
     // Fetch the wasm module
-    let module = fetch_policy(uri, PullDestination::Store(STORE_ROOT.clone()), None, None)
-        .await
-        .expect("failed pulling module");
+    let module = fetch_policy(
+        uri,
+        PullDestination::Store(STORE_ROOT.clone()),
+        docker_config.as_ref(),
+        None,
+    )
+    .await
+    .expect("failed pulling module");
 
     let module_store_path = module.local_path;
     let module_name = TAG_REMOVER
