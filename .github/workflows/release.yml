@@ -1,8 +1,15 @@
 name: krew-wasm release
+
 on:
   push:
+    branches:
+    - testing-release
     tags:
     - 'v*'
+#on:
+#  push:
+#    tags:
+#    - 'v*'
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -113,78 +120,78 @@ jobs:
         name: krew-wasm-windows-x86_64
         path: krew-wasm-windows-x86_64.exe.zip
 
-  release:
-    name: Create release
-    runs-on: ubuntu-latest
-    needs:
-      - build-linux-x86_64
-      - build-linux-aarch64
-      - build-darwin-x86_64
-      - build-windows-x86_64
-    steps:
-    - name: Create Release
-      id: create-release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release krew-wasm ${{ github.ref }}
-        draft: false
-        prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+  #release:
+  #  name: Create release
+  #  runs-on: ubuntu-latest
+  #  needs:
+  #    - build-linux-x86_64
+  #    - build-linux-aarch64
+  #    - build-darwin-x86_64
+  #    - build-windows-x86_64
+  #  steps:
+  #  - name: Create Release
+  #    id: create-release
+  #    uses: actions/create-release@v1
+  #    env:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    with:
+  #      tag_name: ${{ github.ref }}
+  #      release_name: Release krew-wasm ${{ github.ref }}
+  #      draft: false
+  #      prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
 
-    - name: Download linux-x86_64 binary
-      uses: actions/download-artifact@v2
-      with:
-        name: krew-wasm-linux-x86_64
-    - name: Publish linux-x86_64 binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_name: krew-wasm-linux-x86_64.zip
-        asset_path: krew-wasm-linux-x86_64.zip
-        asset_content_type: application/zip
+  #  - name: Download linux-x86_64 binary
+  #    uses: actions/download-artifact@v2
+  #    with:
+  #      name: krew-wasm-linux-x86_64
+  #  - name: Publish linux-x86_64 binary
+  #    uses: actions/upload-release-asset@v1
+  #    env:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    with:
+  #      upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #      asset_name: krew-wasm-linux-x86_64.zip
+  #      asset_path: krew-wasm-linux-x86_64.zip
+  #      asset_content_type: application/zip
 
-    - name: Download linux-aarch64 binary
-      uses: actions/download-artifact@v2
-      with:
-        name: krew-wasm-linux-aarch64
-    - name: Publish linux-aarch64 binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_name: krew-wasm-linux-aarch64.zip
-        asset_path: krew-wasm-linux-aarch64.zip
-        asset_content_type: application/zip
+  #  - name: Download linux-aarch64 binary
+  #    uses: actions/download-artifact@v2
+  #    with:
+  #      name: krew-wasm-linux-aarch64
+  #  - name: Publish linux-aarch64 binary
+  #    uses: actions/upload-release-asset@v1
+  #    env:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    with:
+  #      upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #      asset_name: krew-wasm-linux-aarch64.zip
+  #      asset_path: krew-wasm-linux-aarch64.zip
+  #      asset_content_type: application/zip
 
-    - name: Download darwin-x86_64 binary
-      uses: actions/download-artifact@v2
-      with:
-        name: krew-wasm-darwin-x86_64
-    - name: Publish darwin-x86_64 binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_name: krew-wasm-darwin-x86_64.zip
-        asset_path: krew-wasm-darwin-x86_64.zip
-        asset_content_type: application/zip
+  #  - name: Download darwin-x86_64 binary
+  #    uses: actions/download-artifact@v2
+  #    with:
+  #      name: krew-wasm-darwin-x86_64
+  #  - name: Publish darwin-x86_64 binary
+  #    uses: actions/upload-release-asset@v1
+  #    env:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    with:
+  #      upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #      asset_name: krew-wasm-darwin-x86_64.zip
+  #      asset_path: krew-wasm-darwin-x86_64.zip
+  #      asset_content_type: application/zip
 
-    - name: Download windows-x86_64 binary
-      uses: actions/download-artifact@v2
-      with:
-        name: krew-wasm-windows-x86_64
-    - name: Publish windows-x86_64 binary
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_name: krew-wasm-windows-x86_64.exe.zip
-        asset_path: krew-wasm-windows-x86_64.exe.zip
-        asset_content_type: application/zip
+  #  - name: Download windows-x86_64 binary
+  #    uses: actions/download-artifact@v2
+  #    with:
+  #      name: krew-wasm-windows-x86_64
+  #  - name: Publish windows-x86_64 binary
+  #    uses: actions/upload-release-asset@v1
+  #    env:
+  #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #    with:
+  #      upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #      asset_name: krew-wasm-windows-x86_64.exe.zip
+  #      asset_path: krew-wasm-windows-x86_64.exe.zip
+  #      asset_content_type: application/zip
