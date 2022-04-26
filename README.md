@@ -162,6 +162,15 @@ website has many examples about "Hello World" WASI programs.
 
 A demo policy, that interacts with the API server, can be found [here](https://github.com/flavio/kubectl-kubewarden/).
 
+## Examples
+
+These are some kubectl plugins written using WebAssembly and WASI:
+
+* [kubectl-decoder](https://github.com/flavio/kubectl-decoder): decode Kubernetes `Secret`s, provide detailed information about x509 certificates found inside of the `Secret`
+* [kubectl-kubewarden](https://github.com/flavio/kubectl-kubewarden): display information about the [kubewarden](https://kubewarden.io) stack
+
+Do you have other plugins made with WebAssembly and WASI? Open a PR!
+
 ## Acknowledgements
 
 The idea about writing kubectl plugins using WebAssembly
