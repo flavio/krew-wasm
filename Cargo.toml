@@ -28,7 +28,7 @@ tokio                            = "1.17"
 tracing                          = "0.1"
 tracing-futures                  = "0.2"
 tracing-subscriber               = { version = "0.3", features = ["fmt", "env-filter"] }
-wasmtime                         = "0.34"
+wasmtime                         = { version = "0.34", features = [ "cache" ] }
 wasmtime-wasi                    = "0.34"
 wasi-common                      = "0.34"
 wasi-cap-std-sync                = "0.34"

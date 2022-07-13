@@ -74,6 +74,7 @@ pub(crate) fn run_plugin(wasm_module_path: PathBuf, wasi_args: &WasiArgs) -> Res
     config.wasm_backtrace_details(wasmtime::WasmBacktraceDetails::Enable);
     config.wasm_multi_memory(true);
     config.wasm_module_linking(true);
+    config.cache_config_load_default()?;
 
     let engine = Engine::new(&config).unwrap();
     let module = Module::from_file(&engine, wasm_module_path)?;
