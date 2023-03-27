@@ -81,11 +81,8 @@ pub(crate) async fn pull(uri: &str, force_pull: ForcePull) {
 
     // Create the webassembly module symlink in the "all modules" root
     // TODO(ereslibre): figure out Windows behavior
-    std::os::unix::fs::symlink(
-        &module_store_path,
-        ALL_MODULES_STORE_ROOT.join(module_name),
-    )
-    .expect("error symlinking top level module");
+    std::os::unix::fs::symlink(&module_store_path, ALL_MODULES_STORE_ROOT.join(module_name))
+        .expect("error symlinking top level module");
 
     // Create the kubectl plugin symlink pointing to ourselves
     let kubectl_plugin_name = format!("kubectl-{}", &module_name,);
