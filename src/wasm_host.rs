@@ -29,8 +29,8 @@ fn build_wasi_ctx(args: &WasiArgs) -> WasiCtx {
     ctx = ctx.inherit_env().unwrap();
     ctx = ctx
         .preopened_dir(
-            Dir::open_ambient_dir(&home_dir, ambient_authority()).unwrap(),
-            &home_dir,
+            Dir::open_ambient_dir(home_dir, ambient_authority()).unwrap(),
+            home_dir,
         )
         .unwrap();
 

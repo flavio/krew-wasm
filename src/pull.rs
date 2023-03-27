@@ -61,7 +61,7 @@ pub(crate) async fn pull(uri: &str, force_pull: ForcePull) {
         .to_string();
     let module_name = module_name.strip_suffix(".wasm").unwrap_or(&module_name);
 
-    if Path::exists(&ALL_MODULES_STORE_ROOT.join(&module_name)) {
+    if Path::exists(&ALL_MODULES_STORE_ROOT.join(module_name)) {
         if force_pull == ForcePull::DoNotForcePull {
             eprintln!("there is already a module with this name ({}). You can pull with the `-f` flag to overwrite the existing module", module_name);
             process::exit(1);
@@ -83,7 +83,7 @@ pub(crate) async fn pull(uri: &str, force_pull: ForcePull) {
     // TODO(ereslibre): figure out Windows behavior
     std::os::unix::fs::symlink(
         &module_store_path,
-        ALL_MODULES_STORE_ROOT.join(&module_name),
+        ALL_MODULES_STORE_ROOT.join(module_name),
     )
     .expect("error symlinking top level module");
 
@@ -92,7 +92,7 @@ pub(crate) async fn pull(uri: &str, force_pull: ForcePull) {
     // TODO(ereslibre): figure out Windows behavior
     std::os::unix::fs::symlink(
         std::env::current_exe().expect("cannot find current executable"),
-        &BIN_ROOT.join(&kubectl_plugin_name),
+        BIN_ROOT.join(&kubectl_plugin_name),
     )
     .expect("error symlinking kubectl plugin");
 
