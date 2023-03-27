@@ -8,4 +8,7 @@ ignore = [
                        # Ignored because there are not known workarounds or dependency version bump
                        # at this time. The call to localtime_r is not protected by any lock and can
                        # cause unsoundness. Read the previous link for more information.
+  "RUSTSEC-2022-0075",
+  "RUSTSEC-2022-0076", # Old release of `wasmtime`: we have to use this version because of `wit-bindgen`
+  "RUSTSEC-2020-0168", # `mach` not being maintained anymore. This is a transitive dep of wasmtime
 ]
