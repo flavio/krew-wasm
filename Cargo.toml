@@ -15,7 +15,7 @@ members = [
 
 [dependencies]
 anyhow                           = "1.0"
-clap                             = { version = "4.3", features = [ "derive", "env" ] }
+clap                             = { version = "4.4", features = [ "derive", "env" ] }
 directories                      = "5.0"
 kube-conf                        = "0.2"
 lazy_static                      = "1.4"
