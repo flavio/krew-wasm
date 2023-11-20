@@ -27,7 +27,7 @@ reqwest              = { git = "https://github.com/seanmonstar/reqwest.git", rev
 tokio                = { version = "1", features = [ "full" ] }
 tracing              = "0.1"
 url                  = "2.2"
-uuid                 = { version = "1.5", features = [ "v4" ] }
+uuid                 = { version = "1.6", features = [ "v4" ] }
 wit-bindgen-wasmtime = { git = "https://github.com/bytecodealliance/wit-bindgen", rev = "f5eed0fb9f1087a2f8889194d0debeeafa789c88" }
 
 [build-dependencies]
